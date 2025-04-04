@@ -1,9 +1,9 @@
 body {
     max-height: 400px;
     max-width: 300px;
-    font-family: helvetica, sans-serif;
+    font-family: Inter, sans-serif;
     font-size: 14px;
-    background-color: #2C302E;
+    background: linear-gradient(to bottom, #1e1f22, #1e1f22);
     color: white;
     margin: 0;
     padding: 0;
@@ -22,11 +22,8 @@ h1 {
 
 #header {
     width: 100%;
-    border-radius: 10px;
-    background-color: #909590;
     text-align: center;
     align-self: center;
-    padding: 15px 0 15px 0;
 }
 
 #url {
@@ -34,17 +31,38 @@ h1 {
 }
 
 #rating-container {
-    margin: 0 10px 0 10px;
+    display: flex;
+    align-items: center;
+    margin: 0 10px;
 }
+
+#rating-container span {
+    margin-right: 10px;
+}
+
+.rating {
+    display: flex;
+    align-items: center;
+}
+
+.vote-icon {
+    width: 30px;
+    height: 30px;
+    margin-right: 5px;
+}
+
+#divider {
+    margin: 0 10px;
+}
+
+
 
 #main {
     min-height: 200px;
     min-width: 250px;
     display: grid;
-    background-color: #474A48;
     justify-items: center;
     text-align: center;
-    border-radius: 8px;
     margin: 10px;
     padding: 10px 10px 10px 10px;
 }
@@ -69,6 +87,11 @@ h1 {
     background-color: #8e1919;
 }
 
+#divider {
+    margin: 0 10px;
+    color: #2C302E;
+}
+
 .button {
     background-color: #537A5A;
     color: white;
@@ -80,12 +103,18 @@ h1 {
     cursor: pointer;
 }
 
+.vote-icon {
+    width: 30px;
+    height: 30px;
+    margin-right: 10px;
+}
+
 .line {
     border: none;
     height: 1px;
     background-color: #2C302E;
     margin: 20px 0 20px 0;
-    width: 99%;
+    width: 100%;
 }
 
 .red {

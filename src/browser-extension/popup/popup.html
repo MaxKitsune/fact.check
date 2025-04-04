@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <link rel="stylesheet" href="popup.css">
+    <link rel="stylesheet" href="popup.css?v=1.1">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>fact.check</title>
@@ -18,11 +18,19 @@
         <hr class="line">
 
         <div id="rating-container">
-            <span>Bewertungen dieser Seite:</span><br>
-            <span>Upvotes: <span id="rating-up" class="lightgreen">0</span></span><br>
-            <span>Downvotes: <span id="rating-down" class="red">0</span></span>
-
+            <span>Bewertungen:</span><br><br>
+            <span class="rating">
+                <img src="like.png" class="vote-icon">
+                <span id="rating-up" class="lightgreen">0</span>
+            </span>
+            <span id="divider">|</span>
+            <span class="rating">
+                <img src="dislike.png" class="vote-icon">
+                <span id="rating-down" class="red">0</span>
+            </span>
         </div>
+
+
 
         <hr class="line">
 
