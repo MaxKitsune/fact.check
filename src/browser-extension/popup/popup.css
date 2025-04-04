@@ -36,10 +36,6 @@ h1 {
     margin: 0 10px;
 }
 
-#rating-container span {
-    margin-right: 10px;
-}
-
 .rating {
     display: flex;
     align-items: center;
@@ -50,12 +46,6 @@ h1 {
     height: 30px;
     margin-right: 5px;
 }
-
-#divider {
-    margin: 0 10px;
-}
-
-
 
 #main {
     min-height: 200px;
@@ -88,7 +78,7 @@ h1 {
 }
 
 #divider {
-    margin: 0 10px;
+    margin: 0 20px;
     color: #2C302E;
 }
 
