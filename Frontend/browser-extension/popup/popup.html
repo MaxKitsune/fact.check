@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="popup.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>fact.check</title>
+</head>
+<body>
+<main>
+    <div id="main">
+        <div id="header" class="lightgreen">
+            <h1>fact.check</h1>
+            <span id="url">None</span>
+        </div>
+
+        <hr class="line">
+
+        <div id="rating-container">
+            <span>Bewertungen dieser Seite:</span><br>
+            <span>Upvotes: <span id="rating-up" class="lightgreen">0</span></span><br>
+            <span>Downvotes: <span id="rating-down" class="red">0</span></span>
+
+        </div>
+
+        <hr class="line">
+
+        <div id="voting-container">
+            <div id="text">
+                <span>Bideh bewertn bitch</span><br>
+                <span id="answer">Noch nicht bewertet</span>
+            </div>
+            <div>
+                <button id="button-pos" class="button">Upvote</button>
+                <button id="button-neg" class="button">Downvote</button>
+            </div>
+        </div>
+
+    </div>
+</main>
+<script src="popup.js"> </script>
+</body>
+</html>

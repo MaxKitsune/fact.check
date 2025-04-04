@@ -1,0 +1,78 @@
+console.log("Popup-Skript wird geladen");
+
+document.addEventListener('DOMContentLoaded', () => {
+    browser.tabs.query({ active: true, currentWindow: true }).then((tabs) => {
+        if (tabs.length > 0) {
+            const currentUrl = new URL(tabs[0].url);
+
+            // Extrahiert die Hauptdomain und Subordner
+            const domainWithSubfolders = `${currentUrl.hostname}${currentUrl.pathname}`;
+            const urlElement = document.getElementById('url');
+            urlElement.innerText = domainWithSubfolders;
+
+            const rating_up_text = document.getElementById("rating-up");
+            const rating_down_text = document.getElementById("rating-down");
+
+            fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent('https://db-factcheck.kitsunexoo.net/domains'))
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                    console.log("Domain mit Subfoldern: " + domainWithSubfolders);
+                    const result = data.find(item => item.domain === domainWithSubfolders);
+
+                    if (result) {
+                        rating_up_text.innerText = result.upvotes;
+                        rating_up_text.style.color = "#9AE19D";
+                        rating_down_text.innerText = result.downvotes;
+                        rating_down_text.style.color = "#c91e1e";
+                    } else {
+                        rating_up_text.innerText = 0;
+                        rating_down_text.innerText = 0;
+                    }
+                })
+                .catch(error => console.error('Fehler beim Abrufen der Daten:', error));
+
+
+            /* if (domainWithSubfolders === "x.com/elonmusk") {
+                rating_up.innerText = "0";
+                rating_up.style.color = "#9AE19D";
+                rating_down.innerText = "500";
+                rating_down.style.color = "#c91e1e";
+            } else {
+                rating_up.innerText = "None";
+                rating_down.innerText = "None";
+            } */
+
+
+            //Rating buttons
+            document.getElementById('button-pos').addEventListener('click', () => {
+                console.log("button1 geklickt");
+                let text = document.getElementById("answer");
+
+                if (domainWithSubfolders === "x.com/elonmusk") {
+                    text.innerText = "Du Hurensohn";
+                    text.style.color = "red";
+                } else {
+                    text.innerText = "Ich komm bei der Seite wow!";
+                    text.style.color = "#9AE19D";
+                }
+            });
+
+            document.getElementById('button-neg').addEventListener('click', () => {
+                console.log("button2 geklickt");
+                let text = document.getElementById("answer");
+
+                if (domainWithSubfolders === "x.com/elonmusk") {
+                    text.innerText = "Gut so, brav :)";
+                    text.style.color = "#9AE19D";
+                } else {
+                    text.innerText = "Diese Seite ist offenbar Dreck!";
+                    text.style.color = "red";
+                }
+            });
+        }
+
+    }).catch((error) => {
+        console.error('Fehler beim Abrufen der URL:', error);
+    });
+});

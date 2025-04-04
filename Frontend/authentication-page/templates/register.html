@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <title>fact.check</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/fact.check.icon.png') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
+
+</head>
+<body>
+<div id="page">
+    <div id="container">
+        <div id="authentication">
+            <div id="header">
+                <img id="header-logo" src="{{ url_for('static', filename='images/fact.check.icon.png') }}" alt="fact check logo">
+                <h1 id="header-text">fact.check</h1>
+            </div>
+
+            <div id="login-container">
+                <h1>Register</h1>
+                <div id="login-form">
+                    <form action="https://db-factcheck.kitsunexoo.net/register" method="POST">
+                        <label for="email"></label><input type="text" id="email" name="email" placeholder="Email Adress" required>
+                        <label for="password"></label><input type="password" id="password" name="password" placeholder="Password" required>
+                        <button id="continue-btn">Continue</button>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script src="static/js/scripts.js?v=1.0.0"></script>
+</body>
+</html>
