@@ -22,6 +22,7 @@ limiter = Limiter(
 def limited():
     return "This endpoint is rate limited to 10 per minute."
 
+
 def get_db_connection():
     conn = psycopg2.connect(
         host=os.environ.get("DB_HOST"),
@@ -30,6 +31,7 @@ def get_db_connection():
         password=os.environ.get("DB_PASSWORD"),
     )
     return conn
+
 
 @app.route("/")
 def index():
@@ -51,6 +53,7 @@ def index():
 @app.route("/success")
 def success():
     return "Success"
+
 
 @app.route("/register", methods=["POST", "GET"])
 def register():
@@ -134,10 +137,12 @@ def login():
             cur.execute("SELECT id FROM users WHERE email = %s", (email,))
             rows = cur.fetchall()
             session['user_id'] = int(rows[0][0])
+            cur.execute("UPDATE users SET last_login = NOW() WHERE id = %s", (session['user_id'],))
+            conn.commit()
             conn.close()
             cur.close()
 
-            print(session['user_email'], " with id ", session['user_id'], " logged in.") # Logging successfull log-in
+            print("[TEST] ", session['user_email'], " with id ", session['user_id'], " logged in.")
             return redirect(url_for("success"))
         else:
             flash("Log-in failed. Please try again later.", "error")
@@ -150,25 +155,24 @@ def login():
 
 @app.route("/logout")
 def logout():
-    session.clear()
-    return "You are successfully logged out."
+    if session.get('user_id'):
+        session.clear()
+        return "You are successfully logged out."
+    else:
+        return "You are not currently logged in."
 
-
+#ToDo: Direct transfer of the domain, not with <argument>
 @app.route("/get-votes/<argument>", methods=["GET"])
 def get_votes(argument):
     conn = get_db_connection()
     cur = conn.cursor()
-    # ToDo: Get the Domain Votes; join domains.id mit votable_domains.id und gib up- und downvotes zurück
-    # cur.execute("SELECT domain FROM domains WHERE domain=%s;",(argument,))
-
+    cur.execute("SELECT domain, path, upvotes, downvotes FROM votable_domains JOIN public.domains d ON d.id = votable_domains.domain_id WHERE domain = %s;",(argument,))
     rows = cur.fetchall()
 
     if not rows: # If the domain isn't listed yet, create a new entry
-
-        # ToDo: Insert the new domain in table domains and votable_domains and return the new values
-        # cur.execute("INSERT INTO domains (domain, upvotes, downvotes) VALUES (%s, 0, 0)", (argument,))
-        # rows = cur.execute("SELECT domain, upvotes, downvotes FROM domains WHERE domain=%s;",(argument,))
-
+        cur.execute("INSERT INTO domains(domain) VALUES (%s);", (argument,))
+        rows = cur.execute("SELECT domain, path, upvotes, downvotes FROM votable_domains JOIN public.domains d ON d.id = votable_domains.domain_id WHERE domain = %s;",(argument,))
+        # ToDo: Only insert if the domain actually exists (clientsided)
 
         rows = cur.fetchall()
         conn.commit()
@@ -180,24 +184,26 @@ def get_votes(argument):
 
 @app.route("/upvote/<argument>", methods=["GET"])
 def upvote_domain(argument):
-    # ToDo:  The user has to be logged in to be able to upvote
+    # The user has to be logged in to vote
+    if session.get('user_id'):
+        conn = get_db_connection()
+        cur = conn.cursor()
 
-    conn = get_db_connection()
-    cur = conn.cursor()
+        # ToDo: Add the entry to user_votes and count +1 on table votable_domains
+        # cur.execute("UPDATE domains SET upvotes = upvotes + 1 WHERE domain = %s RETURNING upvotes",(argument,))
 
-    # ToDo: Add the entry to user_votes and count +1 on table votable_domains
-    # cur.execute("UPDATE domains SET upvotes = upvotes + 1 WHERE domain = %s RETURNING upvotes",(argument,))
+        updated = cur.fetchone()
+        conn.commit()
 
-    updated = cur.fetchone()
-    conn.commit()
+        cur.close()
+        conn.close()
 
-    cur.close()
-    conn.close()
-
-    if updated:
-        return jsonify({"domain": argument, "new_upvotes": updated[0]})
+        if updated:
+            return jsonify({"domain": argument, "new_upvotes": updated[0]})
+        else:
+            return jsonify({"error": "Domain not found"}), 404
     else:
-        return jsonify({"error": "Domain not found"}), 404
+        return "You have to be logged in to vote."
 
 
 @app.route("/downvote/<argument>", methods=["GET"])
@@ -225,10 +231,10 @@ if __name__ == "__main__":
 
 
 # More ToDos:
-# ToDo: Sending a mail with confirmation link when registering
 # ToDo: Designing and implementing "Forgot password?"-Page
 # ToDo: Designing and implementing "Change password"-Page
 # ToDo: Deactivation Account for a certain time when the password is entered wrong multiple times
 # ToDo: Using redis or memcached for the flask limiter
+# ToDo: Sending a mail with confirmation link when registering
 
 # ToDo when everything works: Migrating to WSGI Server in production environment
