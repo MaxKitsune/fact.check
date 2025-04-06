@@ -1,4 +1,4 @@
-console.log("Background-Skript (Firefox) gestartet");
+console.log("Background-Skript gestartet");
 
 // Nachrichten-Listener mit dem browser-API
 browser.runtime.onMessage.addListener((request, sender) => {

@@ -5,8 +5,6 @@ import psycopg2 # Connect to fact.check.database
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 
-#Check if it works
-
 app = Flask(__name__)
 
 app.secret_key = os.environ.get("SECRET_KEY")
@@ -236,10 +234,13 @@ if __name__ == "__main__":
 
 
 # More ToDos:
-# ToDo: Designing and implementing "Forgot password?"-Page
-# ToDo: Designing and implementing "Change password"-Page
+# IMPORTANT ToDo: popup should send the domain and one path-element to the server and should display the votes of the site
+
 # ToDo: Deactivation Account for a certain time when the password is entered wrong multiple times
-# ToDo: Using redis or memcached for the flask limiter
 # ToDo: Sending a mail with confirmation link when registering
 
-# ToDo when everything works: Migrating to WSGI Server in production environment
+# Less important
+# ToDo: Designing and implementing "Forgot password?"-Page
+# ToDo: Designing and implementing "Change password"-Page
+
+# When everything works: ToDo: Migrating to WSGI Server in production environment
