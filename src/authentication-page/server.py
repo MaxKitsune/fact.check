@@ -5,6 +5,8 @@ import psycopg2 # Connect to fact.check.database
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 
+#Check if it works
+
 app = Flask(__name__)
 
 app.secret_key = os.environ.get("SECRET_KEY")
@@ -12,6 +14,7 @@ app.secret_key = os.environ.get("SECRET_KEY")
 limiter = Limiter(
     key_func=get_remote_address,
     app=app,
+    storage_uri="redis://localhost:6379/0", # Using redis as backend -> "pip install redis" recommended
     default_limits=["10 per minute"]
 )
 
@@ -183,6 +186,7 @@ def get_votes(argument):
 
 
 @app.route("/upvote/<argument>", methods=["GET"])
+@limiter.limit("2 per minute")
 def upvote_domain(argument):
     # The user has to be logged in to vote
     if session.get('user_id'):
@@ -207,6 +211,7 @@ def upvote_domain(argument):
 
 
 @app.route("/downvote/<argument>", methods=["GET"])
+@limiter.limit("5 per minute")
 def downvote_domain(argument):
     # ToDo:  The user has to be logged in to be able to downvote
 
