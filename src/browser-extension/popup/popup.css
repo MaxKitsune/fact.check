@@ -6,7 +6,7 @@ body {
     word-break: break-word;
     font-family: Inter, sans-serif;
     font-size: 14px;
-    background: linear-gradient(to bottom, #25252b, #121215);
+    background: linear-gradient(to bottom, #27272c, #161619);
     color: white;
     margin: 0;
     padding: 0;
@@ -42,6 +42,10 @@ h1 {
     display: flex;
     align-items: center;
     margin: 0 10px;
+}
+
+#rating-title {
+    margin-bottom: 7px;
 }
 
 .rating {
