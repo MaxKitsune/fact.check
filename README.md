@@ -7,7 +7,7 @@
 <p align="center">
   <img 
     alt="Logo Banner" 
-    src="https://github.com/MaxKitsune/fact.check-Extension/blob/master/browser-extension/icons/default_icon.png?raw=true" 
+    src="https://github.com/MaxKitsune/fact.check/blob/main/src/authentication-page/static/images/fact.check.icon.png?raw=true" 
     width="200">  
 </p>
     
