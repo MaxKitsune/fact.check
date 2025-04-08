@@ -9,8 +9,8 @@
 <body>
 <div id="container">
   <div id="header">
-    <h1>fact.check<span id="db-status">.api</span> is online</h1>
-    <span class="badge {{ badge_class }} ">{{ db_status }} </span>
+    <h1>fact.check<span id="api-status">.api</span> is online</h1>
+    <span id="db-status" class="badge {{ badge_class }} ">{{ db_status }} </span>
   </div>
 </div>
   <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>

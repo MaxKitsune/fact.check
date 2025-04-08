@@ -10,9 +10,15 @@ body {
     color: white;
 }
 
-#db-status {
+#api-status {
     background: linear-gradient(to right, dodgerblue, mediumpurple);
     -webkit-background-clip: text; color: transparent;
+}
+
+#db-status {
+    font-size: 14px;
+    margin: 10px;
+    padding: 5px 10px;
 }
 
 #container {
