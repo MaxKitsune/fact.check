@@ -10,6 +10,11 @@ body {
     color: white;
 }
 
+#db-status {
+    background: linear-gradient(to right, dodgerblue, mediumpurple);
+    -webkit-background-clip: text; color: transparent;
+}
+
 #container {
     margin: 50px auto;
     display: flex;
