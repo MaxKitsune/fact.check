@@ -13,12 +13,10 @@
             <div id="authentication">
                 <div id="header">
                     <img id="header-logo" src="{{ url_for('static', filename='images/fact.check.icon.png') }}" alt="fact check logo">
-                    <h1 id="header-text">fact.check</h1>
+                    <h1 id="header-text">fact.check<span style="background: linear-gradient(to right, dodgerblue, mediumpurple); -webkit-background-clip: text; color: transparent;">.login</span></h1>
                 </div>
 
                 <div id="login-container">
-                    <h1>Login</h1>
-                    <p>Don't have an account? <a href="https://www.google.com">Sign up</a></p>
                     <div id="login-form">
                         <form action="https://db-factcheck.kitsunexoo.net/login" method="POST">
                             <label for="email"></label><input type="text" id="email" name="email" placeholder="Email Adress" required>
@@ -28,6 +26,7 @@
                         <a href="https://www.google.com">Forgot your password?</a>
                     </div>
                 </div>
+                <p id="account-question">Don't have an account? <a href="https://www.google.com">Sign up</a></p>
             </div>
         </div>
     </div>

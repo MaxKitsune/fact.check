@@ -132,6 +132,15 @@ h1 {
     color: #c91e1e;
 }
 
+.gradient {
+    background: linear-gradient(to right, dodgerblue, mediumpurple);
+    -webkit-background-clip: text; color: transparent;
+}
+
+.blue {
+    color: #3e5fff;
+}
+
 .lightgreen {
     color: #9AE19D;
 }

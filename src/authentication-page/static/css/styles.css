@@ -10,7 +10,7 @@ body {
     color: white;
 }
 
-#api-status {
+#api {
     background: linear-gradient(to right, dodgerblue, mediumpurple);
     -webkit-background-clip: text; color: transparent;
 }
@@ -29,15 +29,22 @@ body {
 }
 
 #authentication {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
     background-color: #151823;
     border-radius: 10px;
+    padding: 20px;
     min-width: 400px;
-    min-height: 600px;
-
+    min-height: 450px;
 }
 
 #header {
-    margin: 20px;
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
 }
 
 #header-logo {
@@ -46,7 +53,11 @@ body {
 }
 
 #login-container {
-    margin-top: 50px;
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
 }
 
 #login-container h1 {
@@ -70,6 +81,17 @@ body {
     flex-direction: column;
     align-items: center;
     gap: 5px;
+}
+
+#account-question {
+    align-self: center;
+}
+
+#account-question a {
+    color: #5886e2;
+    text-decoration: none;
+    margin: 5px;
+    transition: color 0.2s, transform 0.2s;
 }
 
 input {
