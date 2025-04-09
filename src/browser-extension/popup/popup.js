@@ -13,17 +13,22 @@ document.addEventListener('DOMContentLoaded', () => {
             const rating_up_text = document.getElementById("rating-up");
             const rating_down_text = document.getElementById("rating-down");
 
-            fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent('https://db-factcheck.kitsunexoo.net/domains'))
+            fetch("https://db-factcheck.kitsunexoo.net/get-votes?url=" + encodeURIComponent(currentUrl.toString()), {
+                method: "GET"
+            })
                 .then(response => response.json())
                 .then(data => {
                     console.log(data);
                     console.log("Domain mit Subfoldern: " + domainWithSubfolders);
-                    const result = data.find(item => item.domain === domainWithSubfolders);
+                    const result = data.find(item => item[0] === currentUrl.hostname && item[1] === currentUrl.pathname);
 
                     if (result) {
-                        rating_up_text.innerText = result.upvotes;
+                        const upvotes = result[2];
+                        const downvotes = result[3];
+
+                        rating_up_text.innerText = upvotes;
                         rating_up_text.style.color = "#9AE19D";
-                        rating_down_text.innerText = result.downvotes;
+                        rating_down_text.innerText = downvotes;
                         rating_down_text.style.color = "#c91e1e";
                     } else {
                         rating_up_text.innerText = 0;
@@ -49,26 +54,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log("button-pos geklickt");
                 let text = document.getElementById("feedback");
 
-                if (domainWithSubfolders === "x.com/elonmusk") {
-                    text.innerText = "Du Hurensohn";
-                    text.style.color = "red";
-                } else {
-                    text.innerText = "Du hast positiv bewertet";
-                    text.style.color = "#9AE19D";
-                }
+                text.innerText = "Du hast positiv bewertet";
+                text.style.color = "#9AE19D";
+
             });
 
             document.getElementById('button-neg').addEventListener('click', () => {
                 console.log("button-neg geklickt");
                 let text = document.getElementById("feedback");
 
-                if (domainWithSubfolders === "x.com/elonmusk") {
-                    text.innerText = "Gut so, brav :)";
-                    text.style.color = "#9AE19D";
-                } else {
-                    text.innerText = "Du hast negativ bewertet";
-                    text.style.color = "red";
-                }
+                text.innerText = "Du hast negativ bewertet";
+                text.style.color = "red";
             });
         }
 
