@@ -56,7 +56,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 text.innerText = "Du hast positiv bewertet";
                 text.style.color = "#9AE19D";
-
             });
 
             document.getElementById('button-neg').addEventListener('click', () => {
