@@ -46,27 +46,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
             //Rating buttons
             document.getElementById('button-pos').addEventListener('click', () => {
-                console.log("button1 geklickt");
-                let text = document.getElementById("answer");
+                console.log("button-pos geklickt");
+                let text = document.getElementById("feedback");
 
                 if (domainWithSubfolders === "x.com/elonmusk") {
                     text.innerText = "Du Hurensohn";
                     text.style.color = "red";
                 } else {
-                    text.innerText = "Ich komm bei der Seite wow!";
+                    text.innerText = "Du hast positiv bewertet";
                     text.style.color = "#9AE19D";
                 }
             });
 
             document.getElementById('button-neg').addEventListener('click', () => {
-                console.log("button2 geklickt");
-                let text = document.getElementById("answer");
+                console.log("button-neg geklickt");
+                let text = document.getElementById("feedback");
 
                 if (domainWithSubfolders === "x.com/elonmusk") {
                     text.innerText = "Gut so, brav :)";
                     text.style.color = "#9AE19D";
                 } else {
-                    text.innerText = "Diese Seite ist offenbar Dreck!";
+                    text.innerText = "Du hast negativ bewertet";
                     text.style.color = "red";
                 }
             });
