@@ -20,7 +20,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 .then(data => {
                     console.log(data);
                     console.log("Domain mit Subfoldern: " + domainWithSubfolders);
-                    const result = data.find(item => item[0] === currentUrl.hostname && item[1] === currentUrl.pathname);
+                    const result = data.find(item => (item[0]) === (currentUrl.hostname));
+                    console.log("Hostname: ", currentUrl.hostname);
 
                     if (result) {
                         const upvotes = result[2];
@@ -30,7 +31,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         rating_up_text.style.color = "#9AE19D";
                         rating_down_text.innerText = downvotes;
                         rating_down_text.style.color = "#c91e1e";
+                        console.log(upvotes);
+                        console.log(downvotes);
                     } else {
+                        console.log("Got no result.")
                         rating_up_text.innerText = 0;
                         rating_down_text.innerText = 0;
                     }
