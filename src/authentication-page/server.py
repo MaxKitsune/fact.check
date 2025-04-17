@@ -1,12 +1,17 @@
 import os # to access .env
 from flask import Flask, request, render_template, redirect, url_for, flash, jsonify, session
 from flask_cors import CORS
-import bcrypt # Hash passwords
-import psycopg2 # Connect to fact.check.database
-from itsdangerous import URLSafeTimedSerializer # creating tokens for the confirmation mail
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+
+from server_functions import get_db_connection, login_user, register_user, extract_domain, subpage_voting_allowed
+
 from flask_mail import Mail, Message
+from itsdangerous import URLSafeTimedSerializer # creating tokens for the confirmation mail
+
+import bcrypt # Hash passwords
+import psycopg2 # Connect to fact.check.database
+
 
 app = Flask(__name__)
 # mail = Mail(app)
@@ -41,16 +46,6 @@ limiter = Limiter(
 @limiter.limit("10 per minute")
 def limited():
     return "This endpoint is rate limited to 10 per minute."
-
-
-def get_db_connection():
-    conn = psycopg2.connect(
-        host=os.environ.get("DB_HOST"),
-        database=os.environ.get("DB_NAME"),
-        user=os.environ.get("DB_USER"),
-        password=os.environ.get("DB_PASSWORD"),
-    )
-    return conn
 
 
 @app.route("/")
@@ -88,7 +83,7 @@ def register():
             return redirect(url_for("register"))
     else:
         return render_template("register.html")
-#
+
 # def generate_confirmation_token(email):
 #     return serializer.dumps(email, salt='email-confirmation-salt')
 #
@@ -109,56 +104,6 @@ def register():
 #     html = render_template('activate.html', confirm_url=confirm_url)
 #     msg = Message("Bitte bestätige deine E-Mail-Adresse", recipients=[user_email], html=html)
 #     mail.send(msg)
-
-
-def register_user(email, password):
-    conn = get_db_connection()
-    cur = conn.cursor()
-
-    password = password.encode("utf-8")
-    hashed = bcrypt.hashpw(password, bcrypt.gensalt()).decode("utf-8")
-
-    try:
-        cur.execute("INSERT INTO users(email, password_hash) VALUES(%s, %s)", (email, hashed))
-        conn.commit()
-    except psycopg2.Error as e:
-        flash(f"Error creating the user. Maybe the user already exists or the email format is wrong? Reason: {e}", "error")
-        print(f"[ConsoleLog] Error creating the user. Maybe the user already exists or the email format is wrong? Reason: {e}")
-        conn.rollback()
-        cur.close()
-        conn.close()
-        return False
-    cur.close()
-    conn.close()
-    return True
-
-
-def login_user(email, password):
-    conn = get_db_connection()
-    cur = conn.cursor()
-    cur.execute("SELECT password_hash FROM users WHERE email = %s", (email,))
-    rows = cur.fetchall()
-    conn.close()
-    cur.close()
-
-    if not rows:  # No record existing
-        return False
-    stored_hash = rows[0][0]
-    
-    try:
-        # Ensure stored_hash is bytes for bcrypt.checkpw
-        if isinstance(stored_hash, str):
-            stored_hash = stored_hash.encode("utf-8")
-            
-        # Check the password
-        if bcrypt.checkpw(password.encode("utf-8"), stored_hash):
-            return True
-        else:
-            return False
-    except ValueError as e:
-        print(f"Error checking password: {e}")
-        return False
-
 
 @app.route("/login", methods=["POST", "GET"])
 def login():
@@ -202,7 +147,7 @@ def logout():
     else:
         return "You are not currently logged in."
 
-#ToDo: Direct transfer of the domain, not with <argument>
+
 @app.route("/get-votes", methods=["GET"])
 def get_votes():
     url = request.args.get('url') # Get url
@@ -211,52 +156,35 @@ def get_votes():
         print("URL parameter missing")
         return jsonify({"error": "URL parameter is missing"}), 400
 
-    print("get_votes function triggered for url: ", url)
-
     conn = get_db_connection()
     cur = conn.cursor()
 
-    if url[:8] == "https://": # Checks if the domain exists
-        url = url[8:]  # Delete the https:// before
+    hostname, path = extract_domain(url)
 
-        if url[len(url) - 1] == "/":
-            hostname = url[:len(url) - 1]  # Remove the "/", if it exists
-        else:
-            hostname = url.split('/', 1)[0]
-        cur.execute("SELECT allow_subpage_voting FROM votable_domains JOIN public.domains d ON d.id = votable_domains.domain_id WHERE domain = %s;",
-        (hostname,))
-        allow_subpage_voting = cur.fetchall()
-        if not allow_subpage_voting:
-            allow_subpage_voting = [[False]]
+    if url[:8] == "https://": # Checks if the domain exists; only https domains are supported
 
-        if allow_subpage_voting[0][0]: # Subpage Voting allowed --> Search for votings for the specific path
-            path = url.split('/', 1)[1] # Only the first subpath is supported e.g. youtube.com/@username; everything beyond that will be cut off
-            if path.count('/'):
-                path = path.split('/', 1)[0]
-                print(path)
-
-            print("hostname is: ", hostname, " and path is: ", path)
+        if subpage_voting_allowed(hostname): # Subpage Voting allowed --> Search for votings for the specific path
             cur.execute("SELECT domain, path, upvotes, downvotes FROM domains d JOIN votable_domains v ON d.id = v.domain_id WHERE domain = %s AND path = %s", (hostname, path))
             rows = cur.fetchall()
             if not rows:
                 cur.execute("SELECT id FROM domains WHERE domain = %s", (hostname,))
                 domain_id = cur.fetchall()[0][0]
-                print("domain_id is: ", domain_id)
-                cur.execute("INSERT INTO public.votable_domains (entity_id, domain_id, path, upvotes, downvotes, voting_allowed) VALUES (DEFAULT, %s, %s, DEFAULT, DEFAULT, DEFAULT)", (domain_id,path))
+                cur.execute("INSERT INTO public.votable_domains (entity_id, domain_id, path, upvotes, downvotes, voting_allowed) VALUES (DEFAULT, %s, %s, DEFAULT, DEFAULT, DEFAULT)", (domain_id, path))
                 conn.commit()
 
+                cur.close()
+                conn.close()
                 return jsonify([hostname, path, 0, 0]) # No votes if the domain didn't exist yet
 
         else: # Subpage voting not allowed
             url = hostname
             cur.execute(
-                "SELECT domain, path, upvotes, downvotes FROM votable_domains JOIN public.domains d ON d.id = votable_domains.domain_id WHERE domain = %s;",
-                (url,))
+                "SELECT domain, path, upvotes, downvotes FROM votable_domains JOIN public.domains d ON d.id = votable_domains.domain_id WHERE domain = %s;", (url,))
             rows = cur.fetchall()
 
-            if not rows: # If the domain isn't listed yet, create a new empty entry
+            if not rows: # If the domain isn't listed yet, create a new entry
                 cur.execute("INSERT INTO domains(domain) VALUES (%s);", (url,))
-                rows = cur.execute("SELECT domain, path, upvotes, downvotes FROM votable_domains JOIN public.domains d ON d.id = votable_domains.domain_id WHERE domain = %s;",(url,))
+                rows = cur.execute("SELECT domain, path, upvotes, downvotes FROM votable_domains JOIN public.domains d ON d.id = votable_domains.domain_id WHERE domain = %s;",(url,)) # default up-/and downvotes: 0
 
                 rows = cur.fetchall()
                 conn.commit()
@@ -265,13 +193,12 @@ def get_votes():
         return jsonify(rows)
     cur.close()
     conn.close()
-    return jsonify([0, 0, 0, 0]) # Not found? -> Empty Array
-
+    return jsonify(["Domain not supported.", 0, 0, 0]) # Not supported? -> Empty Array
 
 
 @app.route("/upvote", methods=["GET"])
 @limiter.limit("2 per minute")
-def upvote_domain(argument):
+def upvote_domain():
     # The user has to be logged in to vote
     if session.get('user_id'):
         conn = get_db_connection()
@@ -279,8 +206,12 @@ def upvote_domain(argument):
 
         url = request.args.get('url') # Get url
 
+        hostname, path = extract_domain(url)
+
         # ToDo: Add the entry to user_votes and count +1 on table votable_domains
-        # cur.execute("UPDATE domains SET upvotes = upvotes + 1 WHERE domain = %s RETURNING upvotes",(argument,))
+
+
+        cur.execute("UPDATE domains SET upvotes = upvotes + 1 WHERE domain = %s RETURNING upvotes",(argument,))
 
         updated = cur.fetchone()
         conn.commit()
@@ -289,20 +220,23 @@ def upvote_domain(argument):
         conn.close()
 
         if updated:
-            return jsonify({"domain": argument, "new_upvotes": updated[0]})
+            return jsonify({hostname, path, updated})
         else:
             return jsonify({"error": "Domain not found"}), 404
     else:
         return "You have to be logged in to vote."
 
 
-@app.route("/downvote/<argument>", methods=["GET"])
+@app.route("/downvote", methods=["GET"])
 @limiter.limit("5 per minute")
-def downvote_domain(argument):
+def downvote_domain():
     # ToDo:  The user has to be logged in to be able to downvote
     if session.get('user_id'):
         conn = get_db_connection()
         cur = conn.cursor()
+
+        url = request.args.get('url')  # Get url
+        hostname, path = extract_domain(url)
 
         # ToDo: Add the entry to user_votes and count +1 on table votable_domains
         # cur.execute("UPDATE domains SET downvotes = downvotes + 1 WHERE domain = %s RETURNING downvotes",(argument,))
@@ -313,7 +247,7 @@ def downvote_domain(argument):
         conn.close()
 
         if updated:
-            return jsonify({"domain": argument, "new_downvotes": updated[0]})
+            return jsonify({hostname, path, updated})
         else:
             return jsonify({"error": "Domain not found"}), 404
     else:
@@ -324,7 +258,6 @@ if __name__ == "__main__":
 
 
 # More ToDos:
-# IMPORTANT ToDo: popup should send the domain and one path-element to the server and should display the votes of the site
 
 # ToDo: Deactivate Account for a certain time when the password is entered wrong multiple times
 # ToDo: Sending a mail with confirmation link when registering
