@@ -4,6 +4,8 @@ from flask_cors import CORS
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 
+from psycopg2.errors import UniqueViolation
+
 from server_functions import get_db_connection, login_user, register_user, extract_domain, subpage_voting_allowed
 
 from flask_mail import Mail, Message
@@ -45,6 +47,7 @@ limiter = Limiter(
 @app.route('/limited')
 @limiter.limit("10 per minute")
 def limited():
+    flash("You are voting too fast.", "warning")
     return "This endpoint is rate limited to 10 per minute."
 
 
@@ -162,7 +165,6 @@ def get_votes():
     hostname, path = extract_domain(url)
 
     if url[:8] == "https://": # Checks if the domain exists; only https domains are supported
-
         if subpage_voting_allowed(hostname): # Subpage Voting allowed --> Search for votings for the specific path
             cur.execute("SELECT domain, path, upvotes, downvotes FROM domains d JOIN votable_domains v ON d.id = v.domain_id WHERE domain = %s AND path = %s", (hostname, path))
             rows = cur.fetchall()
@@ -193,44 +195,91 @@ def get_votes():
         return jsonify(rows)
     cur.close()
     conn.close()
-    return jsonify(["Domain not supported.", 0, 0, 0]) # Not supported? -> Empty Array
+    flash("Domain not supported.", "Not supported")
+    return jsonify([0, 0, 0, 0]) # Not supported? -> Empty Array
 
 
-@app.route("/upvote", methods=["GET"])
-@limiter.limit("2 per minute")
-def upvote_domain():
+@app.route("/vote/<argument>", methods=["GET"])
+@limiter.limit("10 per minute")
+def upvote_domain(argument):
     # The user has to be logged in to vote
     if session.get('user_id'):
         conn = get_db_connection()
         cur = conn.cursor()
 
         url = request.args.get('url') # Get url
+        try:
+            hostname, path = extract_domain(url)
+        except ValueError as e:
+            return jsonify({"error": "Domain not supported."}), 404
 
-        hostname, path = extract_domain(url)
+        if argument != "up" and argument != "down":
+            return jsonify({"error": "Site not found."}), 404
 
-        # ToDo: Add the entry to user_votes and count +1 on table votable_domains
+        if subpage_voting_allowed(hostname):
+            try:
+                if argument == 'up':
+                    cur.execute( # Count the vote (+1)
+                        "UPDATE votable_domains v SET upvotes = upvotes + 1 FROM domains d WHERE v.domain_id = d.id AND d.domain = %s AND v.path = %s RETURNING entity_id, upvotes, downvotes;",
+                        (hostname,path,))
+                else:
+                    cur.execute(  # Count the vote (+1)
+                        "UPDATE votable_domains v SET downvotes = downvotes + 1 FROM domains d WHERE v.domain_id = d.id AND d.domain = %s AND v.path = %s RETURNING entity_id, upvotes, downvotes;",
+                        (hostname, path,))
+                returned = cur.fetchall()
+                entity_id = returned[0][0]
+                updated_upvotes = returned[0][1]
+                updated_downvotes = returned[0][2]
+                cur.execute("INSERT INTO user_votes(user_id, entity_id, vote_value) VALUES (%s, %s, True);",
+                            (session.get('user_id'), entity_id)) # Add it to the user_votes
+            except UniqueViolation as e:
+                flash("The user already voted.", "error")
+                conn.rollback()
+            else:
+                conn.commit()
+                flash("Voting successful.", "success")
+        else:
+            try:
+                if argument == 'up':
+                    cur.execute( # Count the vote (+1)
+                        "UPDATE votable_domains v SET upvotes = upvotes + 1 FROM domains d WHERE v.domain_id = d.id AND d.domain = %s RETURNING entity_id, upvotes, downvotes;",
+                        (hostname,))
+                else:
+                    cur.execute(  # Count the vote (+1)
+                        "UPDATE votable_domains v SET downvotes = downvotes + 1 FROM domains d WHERE v.domain_id = d.id AND d.domain = %s RETURNING entity_id, upvotes, downvotes;",
+                        (hostname,))
+                returned = cur.fetchall()
+                entity_id = returned[0][0]
+                updated_upvotes = returned[0][1]
+                updated_downvotes = returned[0][2]
+                cur.execute("INSERT INTO user_votes(user_id, entity_id, vote_value) VALUES (%s, %s, True);", # Add the vote to user_votes
+                            (session.get('user_id'), entity_id))  # Add it to the user_votes
+            except UniqueViolation as e:
+                flash("The user already voted.", "error")
+                conn.rollback()
+            else:
+                conn.commit()
+                flash("Voting successful.", "success")
 
-
-        cur.execute("UPDATE domains SET upvotes = upvotes + 1 WHERE domain = %s RETURNING upvotes",(argument,))
-
-        updated = cur.fetchone()
+        updated = 1 # ToDo: This should be the updated upvotes
         conn.commit()
 
         cur.close()
         conn.close()
 
         if updated:
-            return jsonify({hostname, path, updated})
+            return jsonify([hostname, path, updated_upvotes, updated_downvotes])
         else:
             return jsonify({"error": "Domain not found"}), 404
     else:
-        return "You have to be logged in to vote."
+        flash("You have to be logged in to vote.", "Not logged in.")
+        return redirect(url_for("login"))
 
 
 @app.route("/downvote", methods=["GET"])
 @limiter.limit("5 per minute")
 def downvote_domain():
-    # ToDo:  The user has to be logged in to be able to downvote
+    # The user has to be logged in to be able to downvote
     if session.get('user_id'):
         conn = get_db_connection()
         cur = conn.cursor()
@@ -261,7 +310,6 @@ if __name__ == "__main__":
 
 # ToDo: Deactivate Account for a certain time when the password is entered wrong multiple times
 # ToDo: Sending a mail with confirmation link when registering
-# Test
 
 # Less important
 # ToDo: Designing and implementing "Forgot password?"-Page

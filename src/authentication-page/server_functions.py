@@ -69,12 +69,19 @@ def login_user(email, password):
 def extract_domain(domain):
     if domain[:8] == "https://": # Checks if the domain exists
         domain = domain[8:]  # Delete the https:// before
+    else:
+        raise ValueError("Domain not supported.")
 
     hostname = get_fld(domain, fail_silently=True, fix_protocol=True)
 
-    path = domain.split('/', 1)[1]  # Only the first subpath is supported e.g. youtube.com/@username; everything beyond that will be cut off
-    if path.count('/'):
-        path = path.split('/', 1)[0]
+    if domain[len(domain) - 1] == '/':
+        path = domain.split('/', 1)[1]  # Only the first subpath is supported e.g. youtube.com/@username; everything beyond that will be cut off
+        if path.count('/'):
+            path = path.split('/', 1)[0]
+    elif domain.count('/'):
+        path = domain.split('/', 1)[1]
+    else:
+        path = ''
 
     return hostname, path
 
