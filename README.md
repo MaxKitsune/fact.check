@@ -13,21 +13,6 @@
     
 ---
 
-**Dokumentiere README für GitHub-Projekt**
-
-Der Nutzer fragt nach einer ausführlichen README-Datei für sein Flask-Backend-Projekt, das Teil eines Portfolio-GitHub-Projekts ist. Die README soll gut dokumentiert und entfernte Details wie Redis, .env sowie pgsql umfassen. Sie gibt auch Einblicke in Endpunkte wie /register und /login. Auch wenn die Dateien wie server.py und server\_functions.py nicht direkt zugänglich sind, kann ich die Inhalte durchsuchen. Ich werde daher eine gut strukturierte, technische und detaillierte README erstellen.
-
-**Erstellen einer README-Datei für das GitHub-Projekt**
-
-Ich werde mit einer Anfrage zur Durchsuchung von "server.py" beginnen, um die wichtigsten Details für die README-Datei zu extrahieren. Die Datei soll einen Titel, eventuell Badges (wie Build und Lizenz), eine Projektübersicht, Features und die Architektur (Flask, PostgreSQL, Redis, flask-limiter, bcrypt usw.) umfassen. Weitere Details umfassen Einrichtungsanweisungen, lokale Ausführung, API-Referenz (Endpunkte wie /register, /login), und Beschreibung des Rate-Limitings (z.B. 10 Votes/Minute). Ein zusätzlicher Abschnitt für Frontend-links und vielleicht ein Manifest für eine Browser-Erweiterung könnte auch enthalten sein.
-
-Nachgedacht für 55 Sekunden
-
-Below is a **draft README.md** you can drop straight into the root of your repository.
-I tried to anticipate what recruiters (and future‑you!) want to see: a crisp overview, clear setup steps, and pointers to where the code does what it claims to do.
-
----
-
 # fact.check API 🚦🔍
 
 A Flask‑based backend that lets a community **vote on the credibility of any HTTPS URL**.  
