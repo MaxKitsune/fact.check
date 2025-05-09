@@ -74,6 +74,7 @@ It powers a browser extension (manifest included) and provides a simple web inte
 
 ## Getting Started
 
+```bash
 # 1  Clone
 git clone https://github.com/your‑user/fact.check‑api.git
 cd fact.check‑api
@@ -93,7 +94,7 @@ docker compose up -d postgres redis
 
 # 6  Launch the app
 flask --app server.py run --debug
-
+```
 
 ---
 
