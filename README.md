@@ -212,19 +212,8 @@ Bring them up with `docker compose up -d`.
 
 ## License
 
-Distributed under the **MIT License**. See `LICENSE` for details.
+Distributed under the **MIT License**.
 
 ---
 
 *Happy fact‑checking!* ✨
-
-
----
-
-### How to use this
-
-* **Copy‑paste** everything between the ```markdown fences into `README.md`.  
-* Add screenshots / architecture diagrams if you have them.  
-* Update the Docker tags or default ports if they differ in your environment.  
-* Once you create Alembic migrations, drop the “schema embedded in `server.py`” disclaimer.
-
