@@ -110,6 +110,7 @@ The app reads **nothing** from hard‑coded strings – everything lives in `.en
 
 Example:
 
+```
 # .env.example
 SECRET_KEY="changeme‑super‑secret"
 
@@ -118,10 +119,10 @@ DB_NAME="factcheck"
 DB_USER="factcheck_app"
 DB_PASSWORD="s3cr3t"
 
-# Optional mail settings
+# Optional mail settings in the future
 # MAIL_SERVER="smtp.gmail.com"
 # MAIL_USERNAME="noreply@factcheck.dev"
-
+```
 
 ---
 
@@ -132,6 +133,7 @@ Schema references can be found in the SQL embedded in `server.py` (temporary unt
 
 ### Quick docker‑compose
 
+```
 version: "3.9"
 services:
   postgres:
@@ -146,6 +148,7 @@ services:
     image: redis:7
     command: ["redis-server", "--appendonly", "yes"]
     ports: ["6379:6379"]
+```
 
 
 Bring them up with `docker compose up -d`.
