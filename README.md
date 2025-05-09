@@ -13,9 +13,7 @@
     
 ---
 
-# fact.check API 🚦🔍
-
-A Flask‑based backend that lets a community **vote on the credibility of any HTTPS URL**.  
+A frontend and Flask-based backend that lets a community **vote on the credibility of any HTTPS URL**.  
 It powers a browser extension (manifest included) and provides a simple web interface for manual testing.
 
 > **Project status:** ‑ Experimental / under active development. Expect breaking changes.
