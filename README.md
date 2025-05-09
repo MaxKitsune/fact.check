@@ -18,24 +18,6 @@ It powers a browser extension (manifest included) and provides a simple web inte
 
 > **Project status:** ‑ Experimental / under active development. Expect breaking changes.
 
----
-
-## Table of Contents
-1. [Features](#features)
-2. [Tech Stack](#tech-stack)
-3. [Prerequisites](#prerequisites)
-4. [Getting Started](#getting-started)
-5. [Environment Variables](#environment-variables)
-6. [Database & Redis Setup](#database--redis-setup)
-7. [Running Locally](#running-locally)
-8. [API Reference](#api-reference)
-9. [Frontend & Extension](#frontend--extension)
-10. [Roadmap](#roadmap)
-11. [Contributing](#contributing)
-12. [License](#license)
-
----
-
 ## Features
 
 | ✔︎ | Description |
