@@ -202,4 +202,4 @@ Distributed under the **MIT License**.
 
 ---
 
-**This README was generated with assistance from an AI coding assistant.**
+This README was generated with assistance from an AI coding assistant.
