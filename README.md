@@ -199,3 +199,7 @@ Distributed under the **MIT License**.
 ---
 
 *Happy fact‑checking!* ✨
+
+---
+
+**This README was generated with assistance from an AI coding assistant.**
