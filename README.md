@@ -1,5 +1,5 @@
 <h1 align="center">Fact Check</h1>
-<p align="center">A simple, not-so-crappy-looking Browser Extention to inform you about crappy Websites</p>
+<p align="center"> A simple, minimalistic Browser Extention to inform you about crappy Websites </p>
 
 
 ---
