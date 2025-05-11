@@ -13,8 +13,7 @@
     
 ---
 
-A frontend and Flask-based backend that lets a community **vote on the credibility of any HTTPS URL**.  
-It powers a browser extension (manifest included) and provides a simple web interface for manual testing.
+A frontend and Flask-based backend that lets a community vote on the credibility of any HTTPS URL — powering a browser extension (manifest included) and a simple web interface for manual testing — while maintaining full user privacy.
 
 > **Project status:** ‑ Experimental / under active development. Expect breaking changes.
 
