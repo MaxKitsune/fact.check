@@ -14,9 +14,11 @@ from itsdangerous import URLSafeTimedSerializer # creating tokens for the confir
 import bcrypt # Hash passwords
 import psycopg2 # Connect to fact.check.database
 
+from dotenv import load_dotenv
+load_dotenv()  # Lädt die Datei “.env” aus dem aktuellen Arbeitsverzeichnis
 
 app = Flask(__name__)
-# mail = Mail(app)
+
 app.secret_key = os.environ.get("SECRET_KEY")
 
 allowed_origins = [
@@ -25,7 +27,7 @@ allowed_origins = [
 
 CORS(app, origins=allowed_origins, supports_credentials=True)
 
-# serializer = URLSafeTimedSerializer([app.secret_key])
+serializer = URLSafeTimedSerializer([app.secret_key])
 
 limiter = Limiter(
     key_func=get_remote_address,
@@ -34,14 +36,16 @@ limiter = Limiter(
     default_limits=["10 per minute"]
 )
 
-# app.config.update(
-#     MAIL_SERVER=os.environ.get("MAIL_SERVER"),
-#     MAIL_PORT=587,
-#     MAIL_USE_TLS=True,
-#     MAIL_USERNAME=os.environ.get("MAIL_USERNAME"),
-#     MAIL_PASSWORD=os.environ.get("MAIL_PASSWORD"),
-#     MAIL_DEFAULT_SENDER=os.environ.get("MAIL_DEFAULT_SENDER")
-# )
+app.config.update(
+    MAIL_SERVER=os.environ.get("MAIL_SERVER"),
+    MAIL_PORT=587,
+    MAIL_USE_TLS=True,
+    MAIL_USERNAME=os.environ.get("MAIL_USERNAME"),
+    MAIL_PASSWORD=os.environ.get("MAIL_PASSWORD"),
+    MAIL_DEFAULT_SENDER=os.environ.get("MAIL_DEFAULT_SENDER")
+)
+
+mail = Mail(app)
 
 #ToDo: Designing the "limited" page
 @app.route('/limited')
@@ -87,29 +91,37 @@ def register():
     else:
         return render_template("register.html")
 
-# def generate_confirmation_token(email):
-#     return serializer.dumps(email, salt='email-confirmation-salt')
-#
-# def confirm_token(token, expiration=3600):
-#     try:
-#         email = serializer.loads(
-#             token,
-#             salt='email-confirmation-salt',
-#             max_age=expiration
-#         )
-#     except Exception:
-#         return False
-#     return email
 
-# def send_confirmation_email(user_email):
-#     token = generate_confirmation_token(user_email)
-#     confirm_url = url_for('success', token=token, _external=True)
-#     html = render_template('activate.html', confirm_url=confirm_url)
-#     msg = Message("Bitte bestätige deine E-Mail-Adresse", recipients=[user_email], html=html)
-#     mail.send(msg)
+
+def generate_confirmation_token(email):
+    return serializer.dumps(email, salt='email-confirmation-salt')
+
+def confirm_token(token, expiration=3600):
+    try:
+        email = serializer.loads(
+            token,
+            salt='email-confirmation-salt',
+            max_age=expiration
+        )
+    except Exception:
+        return False
+    return email
+
+def send_confirmation_email(user_email):
+    token = generate_confirmation_token(user_email)
+    confirm_url = url_for('success', token=token, _external=True)
+    html = render_template('activate.html', confirm_url=confirm_url)
+    msg = Message("Please activate your E-Mail for fact.check", recipients=[user_email], html=html)
+    try:
+        mail.send(msg)
+    except Exception as e:
+        print(f"Error sending email: {e}")
+
 
 @app.route("/login", methods=["POST", "GET"])
 def login():
+    send_confirmation_email("gutermaxrgbg@gmail.com")
+
     if request.method == "POST":
         email = request.form.get("email")
         password = request.form.get("password")
@@ -235,6 +247,10 @@ def upvote_domain(argument):
             except UniqueViolation as e:
                 flash("The user already voted.", "error")
                 conn.rollback()
+                cur.execute(
+                    "SELECT domain, path, upvotes, downvotes FROM domains d JOIN votable_domains v ON d.id = v.domain_id WHERE domain = %s AND path = %s",
+                    (hostname, path))
+                updated_upvotes, updated_downvotes = cur.fetchall()
             else:
                 conn.commit()
                 flash("Voting successful.", "success")
@@ -256,55 +272,31 @@ def upvote_domain(argument):
                             (session.get('user_id'), entity_id))  # Add it to the user_votes
             except UniqueViolation as e:
                 flash("The user already voted.", "error")
+                cur.execute(
+                    "SELECT domain, path, upvotes, downvotes FROM votable_domains JOIN public.domains d ON d.id = votable_domains.domain_id WHERE domain = %s;",
+                    (url,))
+                updated_upvotes, updated_downvotes = cur.fetchall()
                 conn.rollback()
             else:
                 conn.commit()
                 flash("Voting successful.", "success")
 
-        updated = 1 # ToDo: This should be the updated upvotes
         conn.commit()
 
         cur.close()
         conn.close()
 
-        if updated:
-            return jsonify([hostname, path, updated_upvotes, updated_downvotes])
-        else:
-            return jsonify({"error": "Domain not found"}), 404
+
+        return jsonify([hostname, path, updated_upvotes, updated_downvotes])
+        # return jsonify({"error": "Domain not found"}), 404
+
     else:
         flash("You have to be logged in to vote.", "Not logged in.")
         return redirect(url_for("login"))
 
 
-@app.route("/downvote", methods=["GET"])
-@limiter.limit("5 per minute")
-def downvote_domain():
-    # The user has to be logged in to be able to downvote
-    if session.get('user_id'):
-        conn = get_db_connection()
-        cur = conn.cursor()
-
-        url = request.args.get('url')  # Get url
-        hostname, path = extract_domain(url)
-
-        # ToDo: Add the entry to user_votes and count +1 on table votable_domains
-        # cur.execute("UPDATE domains SET downvotes = downvotes + 1 WHERE domain = %s RETURNING downvotes",(argument,))
-        updated = cur.fetchone()
-        conn.commit()
-
-        cur.close()
-        conn.close()
-
-        if updated:
-            return jsonify({hostname, path, updated})
-        else:
-            return jsonify({"error": "Domain not found"}), 404
-    else:
-        return "You have to be logged in to vote."
-
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=8085, debug=True)
-
 
 # More ToDos:
 
